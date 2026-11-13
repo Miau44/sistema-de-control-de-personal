@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es-BO">
+<head>
+ <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+ <meta name="color-scheme" content="light"><title>{% block title %}Control de Asistencia{% endblock %} · Boletas</title>
+ <link rel="preconnect" href="https://fonts.googleapis.com">
+ <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+ <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Plus+Jakarta+Sans:wght@200..800&display=swap" rel="stylesheet">
+ <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+
+ {% if actor %}
+ <div class="layout">
+ <aside class="sidebar">
+   <a class="logo" href="/"><span class="brandmark">◈</span><span>Gestión<span class="brand-accent">Personal</span><small>ASISTENCIA · PERMISOS</small></span></a>
+   <div class="nav-title">ESPACIO DE TRABAJO</div>
+   <button class="mobile-nav-toggle" type="button" aria-controls="primary-navigation mobile-session mobile-identity" aria-expanded="false">Men&#250;</button>
+   <nav id="primary-navigation" class="nav" aria-label="Menú principal">
+{% include '_navigation.html' %}
+   </nav>
+   <div class="session-tools" id="mobile-session"><a href="/mi-perfil">Mi perfil</a><form action="/logout" method="post"><input type="hidden" name="csrf" value="{{ csrf }}"><button type="submit">Cerrar sesi&#243;n</button></form></div>
+   <div class="sidebar-foot" id="mobile-identity">
+    <div class="avatar">{{ actor.name[0]|upper }}</div>
+    <div class="identity"><strong>{{ actor.name }}</strong><small>{{ actor.area_name }}</small></div>
+    <a class="profile-icon" href="/mi-perfil" title="Mi perfil">⚙</a>
+   </div>
+ </aside>
+ <div class="main">
+  <header class="topbar"><span class="mobile-brand">◈ GestiónPersonal</span><span class="crumb">{{ company }}</span><span class="topright"><span class="online-dot"></span> Entorno interno · Bolivia</span></header>
+  <main class="content">
+   {% if flash %}<div class="flash {{ 'flash-ok' if flash.ok else 'flash-error' }}" role="alert">{{ flash.message }}</div>{% endif %}
+   {% block content %}{% endblock %}
+  </main>
+ </div>
+ </div>
+ {% else %}
+ <main>{% if flash %}<div class="flash {{ 'flash-ok' if flash.ok else 'flash-error' }}">{{ flash.message }}</div>{% endif %}{% block login %}{% endblock %}</main>
+ {% endif %}
+ <script>
+document.querySelectorAll('.nav-item').forEach(x=>{if(location.pathname===new URL(x.href).pathname)x.classList.add('active')});
+document.querySelectorAll('input[type="date"],input[type="datetime-local"]').forEach(input=>{
+ if(!input.form?.querySelector('.native-date-guidance')){const note=document.createElement('p');note.className='native-date-guidance muted';note.textContent='Fechas: usa el orden indicado por tu navegador. Debajo se confirma la fecha en día/mes/año. Horario administrativo: Bolivia.';(input.form||input.parentElement).prepend(note)}
+ const display=document.createElement('small');display.className='localized-date';display.setAttribute('aria-live','polite');input.insertAdjacentElement('afterend',display);
+ display.id='date-display-'+[...document.querySelectorAll('input')].indexOf(input);input.setAttribute('aria-describedby',((input.getAttribute('aria-describedby')||'')+' '+display.id).trim());
+ const update=()=>{const parts=input.value.split(/[T-]/);display.textContent=input.value?('Fecha: '+parts[2]+'/'+parts[1]+'/'+parts[0]+(parts[3]?' '+parts[3]:'')+' · Bolivia'):'';};
+
+ input.addEventListener('input',update);input.addEventListener('change',update);update();
+});
+ </script>
+ <script src="/static/interface.js" defer></script>
+ {% block scripts %}{% endblock %}
+</body>
+</html>

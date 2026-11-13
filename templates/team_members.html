@@ -1,0 +1,7 @@
+{% extends 'base.html' %}{% block title %}Mi equipo{% endblock %}
+{% block content %}
+<div class="page-heading"><div><div class="eyebrow">SUPERVISIÓN</div><h1>Mi equipo</h1><p>Solo aparecen trabajadores asignados directamente a tu supervisión.</p></div><a class="btn btn-primary" href="/aprobaciones">Solicitudes por aprobar</a><a class="btn btn-outline" href="/mi-equipo/asistencia">Asistencia del equipo</a></div>
+<section class="panel"><div class="table-scroll"><table><thead><tr><th>Trabajador</th><th>Código</th><th>Empresa</th><th>Sucursal</th><th>Área</th><th>Estado</th><th>Ficha</th></tr></thead><tbody>
+{% for u in rows %}<tr><td><b>{{ u.name }}</b><small class="subtext">{{ u.position }}</small></td><td>{{ u.employee_code }}</td><td>{{ u.company_name or 'Pendiente de clasificación' }}</td><td>{{ u.branch_name or 'Pendiente de clasificación' }}</td><td>{{ u.area_name }}</td><td>{{ 'Activo' if u.active else 'Inactivo' }}</td><td><a class="link" href="/mi-equipo/{{ u.id }}">Ver ficha ↗</a></td></tr>{% else %}<tr><td colspan="7" class="empty">No tienes trabajadores asignados actualmente.</td></tr>{% endfor %}
+</tbody></table></div></section>
+{% endblock %}

@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% block title %}Gestión de boletas{% endblock %}
+{% block content %}
+<div class="page-heading">
+ <div>
+  <div class="eyebrow">DOCUMENTOS AUTORIZADOS · KIMTEK</div>
+  <h1>Gestión de boletas</h1>
+  <p>Solo permisos aprobados definitivamente. La descarga masiva genera dos boletas por hoja carta, una en cada mitad.</p>
+ </div>
+ <div>
+  <span class="count-note">{{ total }} boletas</span>
+  <form method="post" action="/boletas/masivo.pdf">
+   <input type="hidden" name="csrf" value="{{ csrf }}">
+   {% for key in ['q','employee','branch_id','area_id','kind','from','to','period'] %}
+   <input type="hidden" name="{{ key }}" value="{{ filters.get(key,'') }}">
+   {% endfor %}
+   <button class="btn btn-primary" type="submit" name="download_all" value="1">Descargar todas las boletas (2 por hoja)</button>
+  </form>
+ </div>
+</div>
+<section class="panel form-panel">
+ <form method="get" class="form-grid" id="boleta-filter">
+  <label>Buscar folio / persona<input name="q" value="{{ filters.get('q','') }}"></label>
+  <label>Sucursal<select name="branch_id"><option value="">Todas</option>{% for b in branches %}<option value="{{ b.id }}" {{ 'selected' if filters.get('branch_id')==b.id|string }}>{{ b.name }}</option>{% endfor %}</select></label>
+  <label>Área<select name="area_id"><option value="">Todas</option>{% for ar in areas %}<option value="{{ ar.id }}" {{ 'selected' if filters.get('area_id')==ar.id|string }}>{{ ar.name }}</option>{% endfor %}</select></label>
+  <label>Empleado<input name="employee" value="{{ filters.get('employee','') }}"></label>
+  <label>Tipo<select name="kind"><option value="">Todos</option>{% for k,v in leave_types.items() %}<option value="{{ k }}" {{ 'selected' if filters.get('kind')==k }}>{{ v }}</option>{% endfor %}</select></label>
+  <label>Fecha desde<input type="date" name="from" value="{{ filters.get('from','') }}"></label>
+  <label>Fecha hasta<input type="date" name="to" value="{{ filters.get('to','') }}"></label>
+  <label>Período 26–25<input type="month" name="period" value="{{ filters.get('period','') }}"></label>
+  <button class="btn btn-primary">Filtrar</button>
+ </form>
+</section>
+<form method="post" action="/boletas/masivo.pdf" id="bulk-form">
+ <input type="hidden" name="csrf" value="{{ csrf }}">
+ {% for key in ['q','employee','branch_id','area_id','kind','from','to','period'] %}
+ <input type="hidden" name="{{ key }}" value="{{ filters.get(key,'') }}">
+ {% endfor %}
+ <input type="hidden" id="all-filtered" name="all_filtered" value="0">
+ <section class="panel">
+  <div class="bulk-toolbar">
+   <label><input type="checkbox" id="select-page"> Seleccionar todas las boletas de esta página</label>
+   <button class="btn btn-outline" type="button" id="select-filtered" {{ 'disabled' if not (filters.get('q') or filters.get('employee') or filters.get('branch_id') or filters.get('area_id') or filters.get('kind') or filters.get('from') or filters.get('to') or filters.get('period')) }}>Seleccionar todos los resultados filtrados ({{ total }})</button>
+   <button class="btn btn-outline" type="button" id="clear-selection">Limpiar selección</button>
+   <span>Seleccionadas: <b id="selected-count">0</b> · Hojas carta: <b id="sheet-count">0</b></span>
+   <button class="btn btn-primary" type="submit">Descargar PDF de selección (2 por hoja)</button>
+  </div>
+  <p id="filtered-requirement" class="inside-note">Para seleccionar todos los resultados filtrados, aplica al menos un filtro. La selección de esta página siempre está disponible.</p>
+  <p class="table-scroll-note">Desplaza la tabla horizontalmente para ver todas las columnas. El folio abre el expediente completo.</p>
+  <div class="table-scroll">
+   <table class="boleta-table">
+    <thead><tr><th>Sel.</th><th>Folio</th><th>Empleado</th><th>Sucursal / Área</th><th>Trámite / fecha</th><th>Encargado</th><th>RR. HH. / autorización</th><th>PDF</th></tr></thead>
+    <tbody>
+     {% for r in rows %}
+     <tr>
+      <td><input type="checkbox" class="row-check" name="request_ids" value="{{ r.id }}"></td>
+      <td><a href="/historial-solicitudes/{{ r.id }}" title="Ver expediente"><b>{{ r.folio }}</b></a></td>
+      <td>{{ r.employee_name }}<small class="subtext">{{ r.employee_code }} · {{ r.position }}</small></td>
+      <td>{{ r.branch_name or 'Pendiente' }}<small class="subtext">{{ r.area_name }}</small></td>
+      <td>{{ leave_types.get(r.leave_type,r.leave_type) }}<small class="subtext">{{ r.starts_at|fecha_hora }} · {{ r.ends_at|fecha_hora }}</small></td>
+      <td>{{ r.manager_name or 'Histórico' }}</td>
+      <td>{{ r.hr_name or 'Registro histórico' }}<small class="subtext">{{ r.decided_at|fecha_hora }}</small></td>
+      <td><a class="pdf-link" href="/boleta/{{ r.id }}.pdf" title="Ver PDF; permite descargar desde el visor">Ver PDF</a></td>
+     </tr>
+     {% else %}
+     <tr><td colspan="8" class="empty">No hay boletas autorizadas que coincidan con los filtros.</td></tr>
+     {% endfor %}
+    </tbody>
+   </table>
+  </div>
+ </section>
+</form>
+<div class="pagination">
+ <span>Página {{ page_no }} de {{ pages }}</span>
+ {% if page_no>1 %}
+ <form method="get">{% for key,value in filters.items() if key!="page" %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endfor %}<input type="hidden" name="page" value="{{ page_no-1 }}"><button class="btn btn-outline">Anterior</button></form>
+ {% endif %}
+ {% if page_no<pages %}
+ <form method="get">{% for key,value in filters.items() if key!="page" %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endfor %}<input type="hidden" name="page" value="{{ page_no+1 }}"><button class="btn btn-outline">Siguiente</button></form>
+ {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+(()=> {
+ const checks=[...document.querySelectorAll('.row-check')];
+ const all=document.getElementById('all-filtered');
+ const count=document.getElementById('selected-count');
+ const sheets=document.getElementById('sheet-count');
+ const filtered=document.getElementById('select-filtered');
+ document.getElementById('filtered-requirement').hidden=!filtered.disabled;
+ filtered.setAttribute('aria-describedby','filtered-requirement');
+ function update(){
+  const n=all.value==='1'?{{ total }}:checks.filter(x=>x.checked).length;
+  count.textContent=n;
+  sheets.textContent=Math.ceil(n/2);
+ }
+ document.getElementById('select-page').addEventListener('change',e=>{
+  all.value='0';
+  checks.forEach(x=>x.checked=e.target.checked);
+  update();
+ });
+ checks.forEach(x=>x.addEventListener('change',()=>{
+  all.value='0';
+  document.getElementById('select-page').checked=checks.length>0&&checks.every(c=>c.checked);
+  update();
+ }));
+ filtered.addEventListener('click',()=>{
+  all.value='1';
+  checks.forEach(x=>x.checked=false);
+  update();
+ });
+ document.getElementById('clear-selection').addEventListener('click',()=>{
+  all.value='0';
+  checks.forEach(x=>x.checked=false);
+  document.getElementById('select-page').checked=false;
+  update();
+ });
+ document.getElementById('bulk-form').addEventListener('submit',e=>{
+  if(all.value!=='1'&&!checks.some(x=>x.checked)){
+   e.preventDefault();
+   alert('Selecciona al menos una boleta.');
+  }
+ });
+ update();
+})();
+</script>
+{% endblock %}

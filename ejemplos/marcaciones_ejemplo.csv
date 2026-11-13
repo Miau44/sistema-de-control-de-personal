@@ -1,0 +1,7 @@
+empleado_id,fecha,hora,tipo
+EMP001,2026-11-05,08:02,Entrada
+EMP001,2026-11-05,17:04,Salida
+EMP002,2026-11-05,08:24,Entrada
+EMP002,2026-11-05,17:07,Salida
+GER001,2026-11-05,08:01,Entrada
+GER001,2026-11-05,17:02,Salida

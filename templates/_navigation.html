@@ -1,0 +1,12 @@
+<a href="/" class="nav-item">Inicio</a>
+{% if 'hr.global' in capabilities %}
+<a href="/conciliacion" class="nav-item">Control de asistencia</a><a href="/aprobaciones" class="nav-item">Solicitudes por aprobar</a><a href="/equipo" class="nav-item">Personal</a><a href="/reportes" class="nav-item">Reportes</a>
+<details class="nav-group"><summary>Gestión y configuración</summary><a href="/boletas" class="nav-item">Boletas</a><a href="/historial-solicitudes" class="nav-item">Historial general de solicitudes</a><a href="/historial-decisiones" class="nav-item">Mis decisiones</a><a href="/calendario" class="nav-item">Calendario laboral</a><a href="/conciliacion/padron" class="nav-item">Padrón biométrico</a><a href="/conciliacion/referencia-rrhh" class="nav-item">Referencia histórica</a><a href="/importar" class="nav-item">Importaciones anteriores</a><a href="/auditoria" class="nav-item">Auditoría</a></details>
+{% else %}
+{% if 'team' in capabilities %}<a href="/mi-equipo" class="nav-item">Mi equipo</a><a href="/aprobaciones" class="nav-item">Solicitudes por aprobar</a><details class="nav-group"><summary>Supervisión</summary><a href="/mi-equipo/asistencia" class="nav-item">Asistencia de mi equipo</a><a href="/historial-decisiones" class="nav-item">Historial de decisiones</a><a href="/conciliacion" class="nav-item">Control de asistencia</a></details>{% elif 'review' in capabilities %}<a href="/aprobaciones" class="nav-item">Solicitudes asignadas</a><a href="/historial-decisiones" class="nav-item">Historial de decisiones</a>{% endif %}
+{% if 'import' in capabilities %}<a href="/importar" class="nav-item">Historial de importaciones</a>{% endif %}{% if 'audit' in capabilities %}<a href="/auditoria" class="nav-item">Auditoría</a>{% endif %}
+{% endif %}
+{% if 'hr.global' in capabilities %}<details class="nav-group"><summary>Mis trámites</summary>{% endif %}
+<a href="/asistencia" class="nav-item">Mi asistencia</a>{% if 'request' in capabilities %}<a href="/solicitar" class="nav-item">Solicitar</a>{% endif %}<a href="/mis-solicitudes" class="nav-item">Mis solicitudes</a>
+{% if 'hr.global' in capabilities %}</details>{% endif %}
+<a href="/notificaciones" class="nav-item">Notificaciones{% if unread_notifications %} · {{ unread_notifications }}{% endif %}</a>

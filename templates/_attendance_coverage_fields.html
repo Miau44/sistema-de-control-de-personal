@@ -1,0 +1,9 @@
+<div class="form-grid">
+ <label>Rango solicitado desde<input type="date" name="requested_from" value="{{ preview.date_from or '' }}" required></label>
+ <label>Rango solicitado hasta<input type="date" name="requested_to" value="{{ preview.date_to or '' }}" required></label>
+ <label>Fecha y hora de exportación (si se conoce)<input type="datetime-local" name="exported_at"></label>
+ <label>Dispositivos esperados (SN separados por comas)<input name="expected_devices" placeholder="Vacío: todos los dispositivos conocidos"></label>
+ <label>Dispositivos revisados sin eventos (SN)<input name="no_event_devices" placeholder="Solo si RR. HH. verificó que no hubo actividad"></label>
+ <label>Observaciones de cobertura<textarea name="coverage_note" maxlength="2000"></textarea></label>
+</div>
+<p>El rango solicitado puede ser diario, semanal, mensual, 26–25 o personalizado. Un dispositivo esperado sin información conserva la cobertura pendiente. No se exigen eventos diarios de todos los dispositivos.</p>

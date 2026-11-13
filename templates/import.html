@@ -1,0 +1,26 @@
+{% extends 'base.html' %}{% block title %}Importar marcaciones{% endblock %}
+{% block content %}
+<div class="page-heading"><div><div class="eyebrow">INTEGRACIÓN DE DATOS</div><h1>Importar marcaciones</h1><p>Una sola vista previa acepta el XLSX real de ZKBio Zlink y los CSV/XLSX compatibles anteriores. El tipo se detecta antes de importar.</p></div></div>
+<div class="form-layout">
+<section class="panel form-panel">
+<h2>Archivo de asistencia</h2>{% if 'hr.global' not in capabilities %}<p>Consulta técnica del historial de importaciones. La carga de archivos y la vinculación de personal requieren Recursos Humanos.</p>{% endif %}
+<div class="inside-note">Se admiten <b>CSV y XLSX sin contraseña</b>. Los códigos se resuelven por asignación de dispositivo/sucursal; el código interno único se conserva como compatibilidad para archivos anteriores.</div>
+{% if 'hr.global' in capabilities %}<form method="post" action="/importar/preview" enctype="multipart/form-data" class="form-stack">
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<label>Sucursal del dispositivo<select name="branch_id"><option value="">Sin alcance biométrico configurado</option>{% for b in branches %}<option value="{{ b.id }}">{{ b.name }}</option>{% endfor %}</select></label>
+<label>Código/nombre del dispositivo<input name="device_code" maxlength="80" placeholder="Ej.: ZK-ELALTO-01"></label>
+<label>Seleccionar archivo<input type="file" name="file" accept=".csv,.xlsx" required></label>
+<button class="btn btn-primary">⇣ Validar y mostrar vista previa</button>
+</form>{% endif %}
+<div class="section-label">COLUMNAS REQUERIDAS</div>
+<div class="table-scroll"><table><thead><tr><th>empleado_id</th><th>fecha</th><th>hora</th><th>tipo</th></tr></thead><tbody><tr><td>EMP001</td><td>2026-11-05</td><td>08:02</td><td>Entrada</td></tr><tr><td>EMP001</td><td>2026-11-05</td><td>17:05</td><td>Salida</td></tr></tbody></table></div>
+<p class="muted">Reconoce encabezados equivalentes en español o inglés. Puede importar eventos sin tipo (UNSPEC) y calcular primera/última marcación si hay dos o más.</p>
+</section>
+<aside class="side-info">
+{% if actor.role=='hr' %}<div class="panel"><h3>Asignar código biométrico</h3><p class="muted">Un mismo código puede existir en otra sucursal; debe quedar vinculado a un dispositivo y persona concretos.</p><form method="post" action="/importar/biometria" class="form-stack"><input type="hidden" name="csrf" value="{{ csrf }}"><label>Sucursal<select name="branch_id" required><option value="">Seleccionar</option>{% for b in branches %}<option value="{{ b.id }}">{{ b.name }}</option>{% endfor %}</select></label><label>Dispositivo<input name="device_code" maxlength="80" required></label><label>Código en el dispositivo<input name="employee_code" maxlength="80" required></label><label>Trabajador<select name="user_id" required><option value="">Seleccionar</option>{% for u in users %}<option value="{{ u.id }}">{{ u.employee_code }} · {{ u.name }}</option>{% endfor %}</select></label><button class="btn btn-outline">Guardar asignación</button></form></div>{% endif %}
+<div class="panel"><h3>Cómo obtener los datos</h3><div class="step"><span>1</span><p>Accede a ZKBio Zlink → Control de asistencia.</p></div><div class="step"><span>2</span><p>Abre Informes y exporta los eventos de entrada y salida.</p></div><div class="step"><span>3</span><p>Si Zlink exige contraseña, guarda el archivo XLSX sin protección desde un equipo autorizado.</p></div></div>
+<div class="warning-soft">La conexión directa a Zlink no está habilitada: requiere documentación y API oficial autorizada por ZKTeco.</div>
+</aside>
+</div>
+<section class="panel panel-offset"><div class="panel-head"><div><h2>Historial de importaciones</h2><p>Resultado por lote y sucursal seleccionada</p></div></div><div class="table-scroll"><table><thead><tr><th>Fecha y hora</th><th>Archivo</th><th>Sucursal</th><th>Dispositivo</th><th>Filas</th><th>Nuevas</th><th>Duplicadas</th><th>Errores</th><th>Importó</th></tr></thead><tbody>{% for b in batches %}<tr><td>{{ b.imported_at|fecha_hora }}</td><td>{{ b.filename }}</td><td>{{ b.branch_name or 'No especificada' }}</td><td>{{ b.device_code or '-' }}</td><td>{{ b.rows_total }}</td><td>{{ b.rows_added }}</td><td>{{ b.rows_duplicate }}</td><td>{{ b.rows_error }}</td><td>{{ b.importer_name or 'Sistema' }}</td></tr>{% else %}<tr><td colspan="9" class="empty">Aún no hay importaciones.</td></tr>{% endfor %}</tbody></table></div></section>
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends 'base.html' %}{% block title %}Asistencia de mi equipo{% endblock %}
+{% block content %}
+<div class="page-heading"><div><div class="eyebrow">SUPERVISIÓN</div><h1>Asistencia de mi equipo</h1><p>Consulta de solo lectura limitada a tus asignaciones directas.</p></div><a class="btn btn-outline" href="/mi-equipo">← Mi equipo</a></div>
+<section class="panel form-panel"><form method="get" action="/mi-equipo/asistencia" class="inline-form"><label>Fecha<input type="date" name="fecha" value="{{ selected_date }}" required></label><button class="btn btn-outline">Consultar</button></form></section>
+<section class="panel panel-offset"><div class="table-scroll"><table><thead><tr><th>Trabajador</th><th>Código</th><th>Área</th><th>Entrada</th><th>Salida</th><th>Estado</th><th>Incidencia</th></tr></thead><tbody>
+{% for u in rows %}<tr><td><a class="link" href="/mi-equipo/{{ u.id }}">{{ u.name }}</a></td><td>{{ u.employee_code }}</td><td>{{ u.area_name }}</td><td>{{ u.result.entrada or '—' }}</td><td>{{ u.result.salida or '—' }}</td><td>{{ u.result.estado_texto }}</td><td>{{ u.result.observacion or '—' }}</td></tr>{% else %}<tr><td colspan="7" class="empty">No hay asignaciones bajo tu responsabilidad.</td></tr>{% endfor %}
+</tbody></table></div></section>
+{% endblock %}

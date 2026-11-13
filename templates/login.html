@@ -1,0 +1,7 @@
+{% extends 'base.html' %}{% block title %}Ingresar{% endblock %}
+{% block login %}
+<div class="login-page"><div class="login-art"><div class="login-art-content"><div class="bigmark">◈</div><h1>Una gestión<br><em>más simple.</em></h1><p>Asistencias, permisos y boletas autorizadas en un mismo lugar.</p><div class="art-footer">GESTIÓN INTERNA DEL PERSONAL</div></div></div>
+<div class="login-card"><div class="login-heading"><div class="mini-brand">◈ GESTIÓNPERSONAL</div><h2>Bienvenido de nuevo</h2><p>Ingresa con tu cuenta institucional.</p></div>
+<form method="post" action="/login" class="form-stack"><input type="hidden" name="csrf" value="{{ csrf }}"><label>Correo institucional<input type="email" name="email" placeholder="usuario@institucion.bo" required autofocus></label><label>Contraseña<input type="password" name="password" placeholder="••••••••••" required></label><button class="btn btn-primary btn-wide">Ingresar al sistema →</button></form>
+<p class="helper">Acceso local de KIMTEK. Solicita tus credenciales al administrador.</p></div></div>
+{% endblock %}

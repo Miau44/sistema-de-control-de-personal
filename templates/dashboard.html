@@ -1,0 +1,21 @@
+{% extends 'base.html' %}{% block title %}Inicio{% endblock %}
+{% block content %}
+<div class="page-heading"><div><div class="eyebrow">PANEL PERSONAL</div><h1>Buen día, {{ actor.name.split(' ')[0] }} <span class="wave">✦</span></h1><p>Este es el estado de tus asistencias y solicitudes.</p></div>{% if 'request' in capabilities %}<a href="/solicitar" class="btn btn-primary">+ Nueva solicitud</a>{% endif %}</div>
+<div class="metrics">
+ <div class="metric"><span class="metric-icon t-teal">◷</span><small>Mi jornada de ayer</small><strong class="metric-small">{{ status_labels[yesterdayrow.estado] }}</strong><span class="metric-bottom">{{ yesterdayrow.fecha|fecha }}</span></div>
+ <div class="metric"><span class="metric-icon t-purple">◈</span><small>Solicitudes pendientes</small><strong>{{ pending }}</strong><span class="metric-bottom">Por revisar / resolver</span></div>
+ {% if personal is not none %}<div class="metric"><span class="metric-icon t-orange">▤</span><small>Personal a cargo</small><strong>{{ personal }}</strong><span class="metric-bottom">Según tu rol y área</span></div>{% endif %}
+ <div class="metric"><span class="metric-icon t-blue">▦</span><small>Período vigente</small><strong class="metric-small">{{ period_label }}</strong><span class="metric-bottom">{{ period_from|fecha }} al {{ thisperiod|fecha }}</span></div>
+</div>
+<div class="two-col">
+ <section class="panel"><div class="panel-head"><div><h2>Marcaciones de ayer</h2><p>{{ yesterdayrow.fecha|fecha }} · Registros verificados del trabajador</p></div><a href="/asistencia">Ver historial ↗</a></div>
+ <div class="two-punch"><div class="punch"><div class="punch-ico">↘</div><small>Entrada</small><strong>{{ yesterdayrow.entrada or '--:--' }}</strong></div><div class="punch"><div class="punch-ico">↗</div><small>Salida</small><strong>{{ yesterdayrow.salida or '--:--' }}</strong></div></div>
+ <div class="inside-note">El sistema nunca inventa marcaciones faltantes. Una corrección requiere solicitud y aprobación.</div>
+ </section>
+ <section class="panel"><div class="panel-head"><div><h2>Últimas solicitudes</h2><p>Seguimiento de tus permisos</p></div><a href="/mis-solicitudes">Ver todas ↗</a></div>
+ {% if my_reqs %}<div class="simple-list">{% for r in my_reqs %}<div class="simple-list-row"><div><b>{{ r.folio }}</b><small>{{ 'Permiso' if r.kind=='PERMISO' else 'Corrección' }} · {{ r.approver_name }}</small></div><span class="pill {{ 'pill-ok' if r.status=='APROBADA' else 'pill-bad' if r.status=='RECHAZADA' else 'pill-wait' }}">{{ r.status|capitalize }}</span></div>{% endfor %}</div>{% else %}<div class="empty">Todavía no enviaste ninguna solicitud.</div>{% endif %}
+ </section>
+</div>
+{% if 'request' in capabilities %}<div class="banner"><div><strong>¿Necesitas un permiso o regularizar una marcación?</strong><p>Envía tu solicitud a tu encargado de área o a Recursos Humanos. Cada decisión queda registrada.</p></div><a class="btn btn-light" href="/solicitar">Crear solicitud →</a></div>
+{% endif %}
+{% endblock %}

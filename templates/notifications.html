@@ -1,0 +1,9 @@
+{% extends 'base.html' %}{% block title %}Notificaci&#243;nes{% endblock %}
+{% block content %}
+<div class="page-heading"><div><div class="eyebrow">AVISOS DEL SISTEMA</div><h1>Notificaci&#243;nes</h1><p>Acciones pendientes y decisiones importantes.</p></div>
+{% if rows|selectattr('read_at','none')|list %}<form method="post" action="/notificaciones/leer"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn btn-secondary">Marcar todas como le&#237;das</button></form>{% endif %}</div>
+<section class="panel"><div class="table-scroll"><table><thead><tr><th>Fecha y hora</th><th>Notificaci&#243;n</th><th>Registro</th><th>Estado</th><th>Accion</th></tr></thead><tbody>
+{% for r in rows %}<tr><td>{{ r.created_at|fecha_hora }}</td><td>{{ r.message }}</td><td>{% if r.entity=='solicitud' %}<a class="link" href="{{ '/aprobaciones' if actor.role in ['manager','hr'] else '/mis-solicitudes' }}#solicitud-{{ r.entity_id }}">Abrir solicitud</a>{% elif r.entity=='boleta' %}<a class="link" href="/boleta/{{ r.entity_id }}.pdf">Abrir boleta PDF</a>{% elif r.entity=='periodo' %}<a class="link" href="/reportes?fin={{ r.entity_id }}">Abrir per&#237;odo</a>{% elif r.entity=='importacion' %}<a class="link" href="/importar">Abrir importaciones</a>{% else %}{{ r.entity or 'Sistema' }}{% endif %}</td><td><span class="status {{ 'status-approved' if r.read_at else 'status-pending' }}">{{ 'Le&#237;da' if r.read_at else 'Nueva' }}</span></td><td>{% if not r.read_at %}<form method="post" action="/notificaciones/{{ r.id }}/leer"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="link-button">Marcar le&#237;da</button></form>{% endif %}</td></tr>
+{% else %}<tr><td colspan="5" class="empty">No tienes notificaciones.</td></tr>{% endfor %}
+</tbody></table></div></section>
+{% endblock %}

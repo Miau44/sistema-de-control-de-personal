@@ -1,0 +1,52 @@
+{% extends 'base.html' %}{% block title %}Nueva solicitud{% endblock %}
+{% block content %}
+<div class="page-heading"><div><div class="eyebrow">TRÁMITES DIGITALES</div><h1>Nueva solicitud</h1><p>Completa el trámite que necesitas y consulta su estado en Mis solicitudes.</p></div><a class="btn btn-outline" href="/mis-solicitudes">Mis solicitudes</a></div>
+<div class="form-layout"><section class="panel form-panel">
+{% if submission_issue %}<div class="flash flash-error" role="alert">{{ submission_issue }}</div>{% else %}
+<form action="/solicitar" method="post" class="form-stack" id="request-form"><input type="hidden" name="csrf" value="{{ csrf }}">
+<div class="section-label">01 · TIPO DE SOLICITUD</div>
+<div class="type-grid">
+ <label class="type-choice"><input type="radio" name="kind" value="PERMISO" checked><span><strong>Permiso / licencia</strong><small>Ausencia, comisión, cita médica</small></span></label>
+ <label class="type-choice"><input type="radio" name="kind" value="PERMISO" data-vacation><span><strong>Vacaciones</strong><small>Fechas y horas autorizadas</small></span></label>
+ <label class="type-choice"><input type="radio" name="kind" value="CORRECCION"><span><strong>Regularizar marcación</strong><small>Olvidé registrar entrada o salida</small></span></label>
+</div>
+<div id="leave-fields"><div class="section-label">02 · DETALLES DEL PERMISO</div>
+<div class="form-grid">
+ <label>Motivo<select name="leave_type">{% for code,label in leave_types.items() %}<option value="{{ code }}">{{ label }}</option>{% endfor %}</select></label>
+ <label>Modalidad<select name="pay_type"><option value="CON_GOCE">Con goce de haberes</option><option value="SIN_GOCE">Sin goce de haberes</option></select></label>
+ <label>Desde<input type="datetime-local" name="starts_at"></label><label>Hasta<input type="datetime-local" name="ends_at"></label>
+ <label>Lugar o destino (opcional)<input name="place" maxlength="200" placeholder="Lugar donde acudirá"></label>
+ <label>Teléfono de contacto (opcional)<input name="contact" maxlength="100" placeholder="Celular / contacto"></label>
+</div></div>
+<div id="correction-fields" hidden><div class="section-label">02 · MARCACIÓN A REGULARIZAR</div><div class="form-grid"><label>Entrada o salida<select name="correction_kind"><option value="IN">Entrada</option><option value="OUT">Salida</option></select></label><label>Fecha y hora reales declaradas<input type="datetime-local" name="correction_at"></label></div></div>
+<div class="section-label">03 · JUSTIFICACIÓN Y ENVÍO</div>
+<label>Descripción detallada del motivo<textarea name="justification" rows="4" minlength="12" maxlength="1800" required placeholder="Describe qué necesitas y la razón."></textarea></label>
+<div class="submit-row"><p id="submission-outcome" aria-live="polite">Cuando el permiso tenga autorización definitiva, podrás consultar su Boleta de Permiso.</p><button class="btn btn-primary">Enviar solicitud →</button></div>
+</form>{% endif %}
+</section><aside class="side-info">
+<details class="panel"><summary>Así funciona tu solicitud</summary>
+{% if submission_approver %}<p>Primera revisión: <strong>{{ submission_approver }}</strong>.</p>
+{% if actor.role=='employee' %}<p>Si el encargado aprueba, continúa a Recursos Humanos para la decisión definitiva.</p>{% else %}<p>Se utiliza el superior operativo configurado. No se añade otra etapa ni puedes aprobar tu propia solicitud.</p>{% endif %}
+{% else %}<p>El envío requiere un responsable válido. Consulta a Recursos Humanos.</p>{% endif %}
+<p>No puedes elegir ni omitir responsables.</p></details>
+<p class="warning-soft">Las fechas de un período cerrado requieren reapertura autorizada antes de tramitar cambios.</p>
+</aside></div>
+{% endblock %}
+{% block scripts %}<script>
+const radios=document.querySelectorAll('[name="kind"]'),motive=document.querySelector('[name=leave_type]');
+let previousMotive=motive?.value;
+function showMode(event){
+ const selected=document.querySelector('[name="kind"]:checked');if(!selected)return;
+ const isLeave=selected.value==='PERMISO';
+ if(event?.target?.name==='kind'){
+  if(selected.hasAttribute('data-vacation')){if(motive.value!=='VACACIONES')previousMotive=motive.value;motive.value='VACACIONES'}
+  else if(isLeave&&motive.value==='VACACIONES')motive.value=previousMotive;
+ }
+ const vacation=isLeave&&motive.value==='VACACIONES';
+ document.getElementById('submission-outcome').textContent=!isLeave?'Cuando tu regularización sea aprobada, quedará registrada como corrección autorizada y se reflejará en la evaluación de asistencia correspondiente. La marcación original no será modificada.':vacation?'Cuando tus vacaciones tengan autorización definitiva, podrás consultar la boleta aplicable. No se calcula saldo ni se presumen días autorizados.':'Cuando el permiso tenga autorización definitiva, podrás consultar su Boleta de Permiso.';
+ document.getElementById('leave-fields').hidden=!isLeave;document.getElementById('correction-fields').hidden=isLeave;
+ document.querySelectorAll('#leave-fields input[type="datetime-local"]').forEach(x=>x.required=isLeave);
+ document.querySelector('#correction-fields input[type="datetime-local"]').required=!isLeave;
+}
+radios.forEach(r=>r.addEventListener('change',showMode));motive?.addEventListener('change',showMode);showMode();
+</script>{% endblock %}
